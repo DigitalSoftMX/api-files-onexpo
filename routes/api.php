@@ -19,4 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('addmedia/{id}', [FileController::class, 'addimage']);
+Route::post('addimage/affiliate/{id}', [FileController::class, 'addImageAffiliate']);
+Route::post('getimage/affiliate', [FileController::class, 'getImageAffiliate']);
+
+Route::post('addimage/supplier/{id}/{product?}', [FileController::class, 'addImageSupplier']);

@@ -15,7 +15,7 @@ class FileController extends Controller
         $this->response = $res;
     }
 
-    public function addimage(Request $request,$id)
+    public function addImageAffiliate(Request $request, $id)
     {
         $rules = ['image'=> 'max:1024'];
         $messages = ['image.max'=> 'El tamaño maximo es 1 mega'];
@@ -25,18 +25,84 @@ class FileController extends Controller
         return $this->response->errorRes($validator->errors(), null);
 
         if ($request->hasFile('image')) {
-            error_log('Nombre imagen: '.$request->image->getClientOriginalName());
-            error_log('Tamaño imagen: '.$request->image->getSize());
+            // error_log('Nombre imagen: '.$request->image->getClientOriginalName());
+            // error_log('Tamaño imagen: '.$request->image->getSize());
             $customFileName = uniqid() . '_.' . $request->image->extension();
             $request->image->storeAs('public/'.$id, $customFileName);
-        }
 
-        $data = [
-            'id' => $id,
-            'image' => $customFileName,
+            $path = public_path('storage/'.$id.'/'.$customFileName);
+            if (file_exists($path)) {
+                $data = [
+                    'affiliate' => $id,
+                    'image' => $customFileName,
+                    'path' => '/'.$id.'/'.$customFileName,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+        }
+        return $this->response->errorRes('error al crear imagen');
+    }
+
+    public function getImageAffiliate(Request $request){
+        $rules = [
+            'affiliate' => 'required',
+            'name' => 'required',
         ];
-        return $this->response->successRes('data', $data);
-        // return response()->json(['ok'=>true,'data'=>$data]);
+        $messages = [
+            'affiliate.required' => 'El campo es requerido',
+            'name.required' => 'El nombre de la imagen es requerido',
+        ];
+        $validator = Validator::make($rules,$messages);
+        if ($validator->fails())
+        return $this->response->errorRes($validator->errors());
+
+        $path = public_path('storage/'.$request->affiliate.'/'.$request->name_image);
+        if (file_exists($path)) {
+            $data = [
+                'affiliate' => $request->affiliate,
+                'image' => $request->name_image,
+                'path' => '/'.$request->affiliate.'/'.$request->name_image,
+            ];
+            return $this->response->successRes('data',$data);
+        }
+        return $this->response->errorRes('Error la imagen no existe');
+
+    }
+
+    public function addImageSupplier(Request $request, $id, $product = null)
+    {
+        $rules = ['image'=> 'max:1024'];
+        $messages = ['image.max'=> 'El tamaño maximo es 1 mega'];
+
+        $validator = Validator::make($rules, $messages);
+        if ($validator->fails())
+        return $this->response->errorRes($validator->errors(), null);
+
+        if ($request->hasFile('image')) {
+            $customFileName = uniqid() . '_.' . $request->image->extension();
+            if ($product != null) {
+                $request->image->storeAs('public/'.$id.'/products', $customFileName);
+                $data = [
+                    'affiliate' => $id,
+                    'product' => $product,
+                    'image' => $customFileName,
+                    'path' => 'products/'.$id.'/'.$customFileName,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+
+            $request->image->storeAs('public/'.$id, $customFileName);
+            $path = public_path('storage/'.$id.'/'.$customFileName);
+            if (file_exists($path)) {
+                $data = [
+                    'affiliate' => $id,
+                    'image' => $customFileName,
+                    'path' => '/'.$id.'/'.$customFileName,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+        }
+        return $this->response->errorRes('error al crear imagen');
     }
 
     public function addfile(Request $request,$id)
