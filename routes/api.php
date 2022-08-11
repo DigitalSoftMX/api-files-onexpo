@@ -23,3 +23,4 @@ Route::post('addimage/affiliate/{id}', [FileController::class, 'addImageAffiliat
 Route::post('getimage/affiliate', [FileController::class, 'getImageAffiliate']);
 
 Route::post('addimage/supplier/{id}/{product?}', [FileController::class, 'addImageSupplier']);
+Route::post('getimage/supplier', [FileController::class, 'getImageSupplier']);

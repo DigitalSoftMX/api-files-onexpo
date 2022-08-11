@@ -11,7 +11,8 @@ class FileController extends Controller
 {
     private $response;
 
-    public function __construct(Responses $res){
+    public function __construct(Responses $res)
+    {
         $this->response = $res;
     }
 
@@ -20,7 +21,7 @@ class FileController extends Controller
         $rules = ['image'=> 'max:1024'];
         $messages = ['image.max'=> 'El tamaño maximo es 1 mega'];
 
-        $validator = Validator::make($rules, $messages);
+        $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails())
         return $this->response->errorRes($validator->errors(), null);
 
@@ -43,16 +44,17 @@ class FileController extends Controller
         return $this->response->errorRes('error al crear imagen');
     }
 
-    public function getImageAffiliate(Request $request){
+    public function getImageAffiliate(Request $request)
+    {
         $rules = [
             'affiliate' => 'required',
-            'name' => 'required',
+            'name_image' => 'required',
         ];
         $messages = [
             'affiliate.required' => 'El campo es requerido',
-            'name.required' => 'El nombre de la imagen es requerido',
+            'name_image.required' => 'El nombre de la imagen es requerido',
         ];
-        $validator = Validator::make($rules,$messages);
+        $validator = Validator::make($request->all(),$rules,$messages);
         if ($validator->fails())
         return $this->response->errorRes($validator->errors());
 
@@ -86,7 +88,7 @@ class FileController extends Controller
                     'affiliate' => $id,
                     'product' => $product,
                     'image' => $customFileName,
-                    'path' => 'products/'.$id.'/'.$customFileName,
+                    'path' => '/'.$id.'/products/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
@@ -103,6 +105,47 @@ class FileController extends Controller
             }
         }
         return $this->response->errorRes('error al crear imagen');
+    }
+
+    public function getImageSupplier(Request $request)
+    {
+        $rules = [
+            'supplier' => 'required',
+            'name_image' => 'required',
+        ];
+        $messages = [
+            'supplier.required' => 'El campo es requerido',
+            'name_image.required' => 'El nombre de la imagen es requerido',
+        ];
+        $validator = Validator::make($request->all(), $rules,$messages);
+        if ($validator->fails())
+            return $this->response->errorRes($validator->errors());
+
+        if ($request->product) {
+            $path = public_path('storage/'.$request->supplier.'/products/'.$request->name_image);
+            if (file_exists($path)) {
+                $data = [
+                    'supplier' => $request->supplier,
+                    'image' => $request->name_image,
+                    'product' => $request->product,
+                    'path' => '/'.$request->supplier.'/products/'.$request->name_image,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+            return $this->response->errorRes('Error la imagen del producto existe');
+        }
+
+        $path = public_path('storage/'.$request->supplier.'/'.$request->name_image);
+        if (file_exists($path)) {
+            $data = [
+                'supplier' => $request->supplier,
+                'image' => $request->name_image,
+                'path' => '/'.$request->supplier.'/'.$request->name_image,
+            ];
+            return $this->response->successRes('data',$data);
+        }
+        return $this->response->errorRes('Error la imagen no existe');
+
     }
 
     public function addfile(Request $request,$id)
