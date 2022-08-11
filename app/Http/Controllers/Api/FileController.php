@@ -36,7 +36,7 @@ class FileController extends Controller
                 $data = [
                     'affiliate' => $id,
                     'image' => $customFileName,
-                    'path' => '/'.$id.'/'.$customFileName,
+                    'path' => 'storage/'.$id.'/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
@@ -63,7 +63,7 @@ class FileController extends Controller
             $data = [
                 'affiliate' => $request->affiliate,
                 'image' => $request->name_image,
-                'path' => '/'.$request->affiliate.'/'.$request->name_image,
+                'path' => 'storage/'.$request->affiliate.'/'.$request->name_image,
             ];
             return $this->response->successRes('data',$data);
         }
@@ -107,7 +107,7 @@ class FileController extends Controller
                     'affiliate' => $id,
                     'image' => $customFileName,
                     'delete' => $delete,
-                    'path' => '/'.$id.'/'.$customFileName,
+                    'path' => 'storage/'.$id.'/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
@@ -133,7 +133,7 @@ class FileController extends Controller
                     'affiliate' => $id,
                     'product' => $product,
                     'image' => $customFileName,
-                    'path' => '/'.$id.'/products/'.$customFileName,
+                    'path' => 'storage/'.$id.'/products/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
@@ -144,7 +144,7 @@ class FileController extends Controller
                 $data = [
                     'affiliate' => $id,
                     'image' => $customFileName,
-                    'path' => '/'.$id.'/'.$customFileName,
+                    'path' => 'storage/'.$id.'/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
@@ -173,7 +173,7 @@ class FileController extends Controller
                     'supplier' => $request->supplier,
                     'image' => $request->name_image,
                     'product' => $request->product,
-                    'path' => '/'.$request->supplier.'/products/'.$request->name_image,
+                    'path' => 'storage/'.$request->supplier.'/products/'.$request->name_image,
                 ];
                 return $this->response->successRes('data',$data);
             }
@@ -185,7 +185,7 @@ class FileController extends Controller
             $data = [
                 'supplier' => $request->supplier,
                 'image' => $request->name_image,
-                'path' => '/'.$request->supplier.'/'.$request->name_image,
+                'path' => 'storage/'.$request->supplier.'/'.$request->name_image,
             ];
             return $this->response->successRes('data',$data);
         }
@@ -231,7 +231,7 @@ class FileController extends Controller
                         'product' => $product,
                         'image' => $customFileName,
                         'delete' => $delete,
-                        'path' => '/'.$id.'/products/'.$customFileName,
+                        'path' => 'storage/'.$id.'/products/'.$customFileName,
                     ];
                     return $this->response->successRes('data',$data);
                 }
@@ -254,7 +254,7 @@ class FileController extends Controller
                     'affiliate' => $id,
                     'image' => $customFileName,
                     'delete' => $delete,
-                    'path' => '/'.$id.'/'.$customFileName,
+                    'path' => 'storage/'.$id.'/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
