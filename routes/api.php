@@ -21,6 +21,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('addimage/affiliate/{id}', [FileController::class, 'addImageAffiliate']);
 Route::post('getimage/affiliate', [FileController::class, 'getImageAffiliate']);
+Route::post('updateimage/affiliate/{id}',[FileController::class, 'updateImageAffiliate']);
 
 Route::post('addimage/supplier/{id}/{product?}', [FileController::class, 'addImageSupplier']);
 Route::post('getimage/supplier', [FileController::class, 'getImageSupplier']);
+Route::post('updateimage/supplier/{id}/{product?}', [FileController::class, 'updateImageSupplier']);

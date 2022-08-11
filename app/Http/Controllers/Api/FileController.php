@@ -71,12 +71,57 @@ class FileController extends Controller
 
     }
 
+    public function updateImageAffiliate(Request $request, $id)
+    {
+        $rules = [
+            'image'=> 'max:1024',
+            'name_image' =>'required',
+        ];
+        $messages = [
+            'image.max' => 'El tamaño maximo es 1 mega',
+            'name_image.required'=> 'El campo es requerido',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails())
+        return $this->response->errorRes($validator->errors(), null);
+
+        if ($request->hasFile('image')) {
+            $customFileName = uniqid() . '_.' . $request->image->extension();
+            $request->image->storeAs('public/'.$id, $customFileName);
+
+            $path = public_path('storage/'.$id.'/'.$customFileName);
+            // error_log('path: '.$path);
+            if (file_exists($path)) {
+
+                //Delete image anterior
+                $path_temp = public_path('storage/'.$id.'/'.$request->name_image);
+                error_log('path_temp: '.$path_temp);
+                $delete = false;
+                if (file_exists($path_temp)) {
+                    unlink($path_temp);
+                    $delete = true;
+                }
+
+                $data = [
+                    'affiliate' => $id,
+                    'image' => $customFileName,
+                    'delete' => $delete,
+                    'path' => '/'.$id.'/'.$customFileName,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+            return $this->response->errorRes('Error la imagen no existe');
+        }
+        return $this->response->errorRes('Error al actualizar');
+    }
+
     public function addImageSupplier(Request $request, $id, $product = null)
     {
         $rules = ['image'=> 'max:1024'];
         $messages = ['image.max'=> 'El tamaño maximo es 1 mega'];
 
-        $validator = Validator::make($rules, $messages);
+        $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails())
         return $this->response->errorRes($validator->errors(), null);
 
@@ -148,27 +193,73 @@ class FileController extends Controller
 
     }
 
-    public function addfile(Request $request,$id)
+    public function updateImageSupplier(Request $request, $id, $product = null)
     {
-        if ($request->hasFile('photo')) {
-            $image      = $request->file('photo');
-            $fileName   = time() . '.' . $image->getClientOriginalExtension();
+        $rules = [
+            'image'=> 'max:1024',
+            'name_image' =>'required|min:10',
+        ];
+        $messages = [
+            'image.max' => 'El tamaño maximo es 1 mega',
+            'name_image.required'=> 'El campo es requerido',
+            'name_image.min'=> 'El nombre es de mas de 10 caracteres',
+        ];
 
-            $img = Image::make($image->getRealPath());
-            // $img->resize(120, 120, function ($constraint) {
-            //     $constraint->aspectRatio();
-            // });
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails())
+        return $this->response->errorRes($validator->errors(), null);
 
-            $img->stream(); // <-- Key point
-
-            //dd();
-            Storage::disk('local')->put('images/1/smalls'.'/'.$fileName, $img, 'public');
-
-            $data = [
-                'id' => $id,
-                'image' => $fileName,
-            ];
+        if ($request->hasFile('image')) {
+            $customFileName = uniqid() . '_.' . $request->image->extension();
+            //Carpeta productos
+            if ($product != null) {
+                //Guardar imagen nueva
+                $request->image->storeAs('public/'.$id.'/products', $customFileName);
+                $path = public_path('storage/'.$id.'/products/'.$customFileName);
+                // dd($path);
+                if (file_exists($path)) {
+                    //Delete image anterior
+                    $path_temp = public_path('storage/'.$id.'/products/'.$request->name_image);
+                    $delete = false;
+                    if (file_exists($path_temp)) {
+                        unlink($path_temp);
+                        $delete = true;
+                    }
+                    //Data a retornar
+                    $data = [
+                        'affiliate' => $id,
+                        'product' => $product,
+                        'image' => $customFileName,
+                        'delete' => $delete,
+                        'path' => '/'.$id.'/products/'.$customFileName,
+                    ];
+                    return $this->response->successRes('data',$data);
+                }
+                return $this->response->errorRes('Error al crear imagen');
+            }
+            //Guaradar imagen nueva
+            $request->image->storeAs('public/'.$id, $customFileName);
+            $path = public_path('storage/'.$id.'/'.$customFileName);
+            // dd($path);
+            if (file_exists($path)) {
+                //Delete image anterior
+                $path_temp = public_path('storage/'.$id.'/'.$request->name_image);
+                $delete = false;
+                if (file_exists($path_temp)) {
+                    unlink($path_temp);
+                    $delete = true;
+                }
+                //Data a retornar
+                $data = [
+                    'affiliate' => $id,
+                    'image' => $customFileName,
+                    'delete' => $delete,
+                    'path' => '/'.$id.'/'.$customFileName,
+                ];
+                return $this->response->successRes('data',$data);
+            }
         }
-        return response()->json(['ok'=>true,'data'=>$data]);
+        return $this->response->errorRes('error al crear imagen');
     }
+
 }
