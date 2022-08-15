@@ -18,8 +18,8 @@ class FileController extends Controller
 
     public function addImageAffiliate(Request $request, $id)
     {
-        $rules = ['image'=> 'max:1024'];
-        $messages = ['image.max'=> 'El tamaño maximo es 1 mega'];
+        $rules = ['image'=> 'max:2048'];
+        $messages = ['image.max'=> 'El tamaño maximo es 2 mega'];
 
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails())
@@ -74,11 +74,11 @@ class FileController extends Controller
     public function updateImageAffiliate(Request $request, $id)
     {
         $rules = [
-            'image'=> 'max:1024',
+            'image'=> 'max:2048',
             'name_image' =>'required',
         ];
         $messages = [
-            'image.max' => 'El tamaño maximo es 1 mega',
+            'image.max' => 'El tamaño maximo es 2 mega',
             'name_image.required'=> 'El campo es requerido',
         ];
 
@@ -118,8 +118,8 @@ class FileController extends Controller
 
     public function addImageSupplier(Request $request, $id, $product = null)
     {
-        $rules = ['image'=> 'max:1024'];
-        $messages = ['image.max'=> 'El tamaño maximo es 1 mega'];
+        $rules = ['image'=> 'max:2048'];
+        $messages = ['image.max'=> 'El tamaño maximo es 2 mega'];
 
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails())
@@ -196,11 +196,11 @@ class FileController extends Controller
     public function updateImageSupplier(Request $request, $id, $product = null)
     {
         $rules = [
-            'image'=> 'max:1024',
+            'image'=> 'max:2048',
             'name_image' =>'required|min:10',
         ];
         $messages = [
-            'image.max' => 'El tamaño maximo es 1 mega',
+            'image.max' => 'El tamaño maximo es 2 mega',
             'name_image.required'=> 'El campo es requerido',
             'name_image.min'=> 'El nombre es de mas de 10 caracteres',
         ];
