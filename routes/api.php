@@ -23,6 +23,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('addimage/affiliate/{id}', [FileController::class, 'addImageAffiliate']);
 
 Route::post('add/base64/{id}', [FileController::class, 'addBase64']);
+Route::post('add/base/{id}', [FileController::class, 'addBase']);
 
 Route::post('getimage/affiliate', [FileController::class, 'getImageAffiliate']);
 Route::post('updateimage/affiliate/{id}',[FileController::class, 'updateImageAffiliate']);
