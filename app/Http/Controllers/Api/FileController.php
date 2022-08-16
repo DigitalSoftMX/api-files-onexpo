@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Repositories\Responses;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class FileController extends Controller
@@ -14,6 +15,31 @@ class FileController extends Controller
     public function __construct(Responses $res)
     {
         $this->response = $res;
+    }
+
+    public function addBase64(Request $request, $id)
+    {
+        $data = explode( ',', $request->image);
+        $temp = explode('/', $data[0]);
+        $extension = explode(';', $temp[1]);
+
+        $file = base64_decode( $data[ 1 ] );
+        $customFileName = uniqid() . '_.' . $extension[0];
+
+        $path = public_path('storage/'.$id.'/'.$customFileName);
+        $status = file_put_contents($path,$file);
+
+        if($status){
+            if (file_exists($path)) {
+                $data = [
+                    'user' => $id,
+                    'image' => $customFileName,
+                    'path' => 'storage/'.$id.'/'.$customFileName,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+        }
+        return $this->response->errorRes('error al crear imagen');
     }
 
     public function addImageAffiliate(Request $request, $id)
