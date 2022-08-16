@@ -68,12 +68,27 @@ class FileController extends Controller
 
     public function addImageAffiliate(Request $request, $id)
     {
-        // $rules = ['image'=> 'max:2048'];
-        // $messages = ['image.max'=> 'El tamaño maximo es 2 mega'];
+        $data = explode( ',', $request->image);
+        $temp = explode('/', $data[0]);
+        $extension = explode(';', $temp[1]);
 
-        // $validator = Validator::make($request->all(), $rules, $messages);
-        // if ($validator->fails())
-        // return $this->response->errorRes($validator->errors(), null);
+        $file = base64_decode( $data[ 1 ] );
+        $customFileName = uniqid() . '_.' . $extension[0];
+
+        $path = public_path('storage/'.$id.'/'.$customFileName);
+        $status = file_put_contents($path,$file);
+
+        if($status){
+            if (file_exists($path)) {
+                $data = [
+                    'user' => $id,
+                    'image' => $customFileName,
+                    'path' => 'storage/'.$id.'/'.$customFileName,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+        }
+        return $this->response->errorRes('error al crear imagen');
 
         if ($request->hasFile('image')) {
             // error_log('Nombre imagen: '.$request->image->getClientOriginalName());
