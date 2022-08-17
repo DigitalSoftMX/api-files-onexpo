@@ -17,89 +17,48 @@ class FileController extends Controller
         $this->response = $res;
     }
 
-    public function addBase64(Request $request, $id)
+    public function addImage(Request $request, $id)
     {
-        $data = explode( ',', $request->image);
-        $temp = explode('/', $data[0]);
-        $extension = explode(';', $temp[1]);
+        $rules = [
+            'image' => 'required'
+        ];
+        $messages = [
+            'image.required'=> 'El campo es requerido'
+        ];
 
-        $file = base64_decode( $data[ 1 ] );
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails())
+        return $this->response->errorRes($validator->errors(), null);
+
+        $path = public_path('storage/'.$id);
+        //Crear directorio si no exite
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        $data = explode( ',', $request->image);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Data incorrecta');
+        }
+        $temp = explode('/', $data[0]);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Temp incorrecto');
+        }
+        $extension = explode(';', $temp[1]);
+        if (count($extension) == 1) {
+            return $this->response->errorRes('Extension incorrecto');
+        }
+
+        $base = base64_decode( $data[ 1 ] );
         $customFileName = uniqid() . '_.' . $extension[0];
 
-        $path = public_path('storage/'.$id.'/'.$customFileName);
-        $status = file_put_contents($path,$file);
+        $status = file_put_contents($path.'/'.$customFileName,$base);
 
         if($status){
-            if (file_exists($path)) {
-                $data = [
-                    'user' => $id,
-                    'image' => $customFileName,
-                    'path' => 'storage/'.$id.'/'.$customFileName,
-                ];
-                return $this->response->successRes('data',$data);
-            }
-        }
-        return $this->response->errorRes('error al crear imagen');
-    }
-    public function addBase(Request $request, $id)
-    {
-        $data = explode( ',', $request->image);
-        $temp = explode('/', $data[0]);
-        $extension = explode(';', $temp[1]);
-
-        $file = base64_decode( $data[ 1 ] );
-        $customFileName = uniqid() . '_.' . $extension[0];
-
-        $path = public_path('storage/'.$id.'/'.$customFileName);
-        $status = file_put_contents($path,$file);
-
-        if($status){
-            if (file_exists($path)) {
-                $data = [
-                    'user' => $id,
-                    'image' => $customFileName,
-                    'path' => 'storage/'.$id.'/'.$customFileName,
-                ];
-                return $this->response->successRes('data',$data);
-            }
-        }
-        return $this->response->errorRes('error al crear imagen');
-    }
-
-    public function addImageAffiliate(Request $request, $id)
-    {
-        $data = explode( ',', $request->image);
-        $temp = explode('/', $data[0]);
-        $extension = explode(';', $temp[1]);
-
-        $file = base64_decode( $data[ 1 ] );
-        $customFileName = uniqid() . '_.' . $extension[0];
-
-        $path = public_path('storage/'.$id.'/'.$customFileName);
-        $status = file_put_contents($path,$file);
-
-        if($status){
-            if (file_exists($path)) {
-                $data = [
-                    'user' => $id,
-                    'image' => $customFileName,
-                    'path' => 'storage/'.$id.'/'.$customFileName,
-                ];
-                return $this->response->successRes('data',$data);
-            }
-        }
-        return $this->response->errorRes('error al crear imagen');
-
-        if ($request->hasFile('image')) {
-            // error_log('Nombre imagen: '.$request->image->getClientOriginalName());
-            // error_log('Tamaño imagen: '.$request->image->getSize());
-            $customFileName = uniqid() . '_.' . $request->image->extension();
-            $request->image->storeAs('public/'.$id, $customFileName);
-
             $path = public_path('storage/'.$id.'/'.$customFileName);
             if (file_exists($path)) {
                 $data = [
-                    'affiliate' => $id,
+                    'user' => $id,
                     'image' => $customFileName,
                     'path' => 'storage/'.$id.'/'.$customFileName,
                 ];
@@ -109,7 +68,7 @@ class FileController extends Controller
         return $this->response->errorRes('error al crear imagen');
     }
 
-    public function getImageAffiliate(Request $request)
+    public function getImageUser(Request $request)
     {
         $rules = [
             'affiliate' => 'required',
@@ -136,32 +95,52 @@ class FileController extends Controller
 
     }
 
-    public function updateImageAffiliate(Request $request, $id)
+    public function updateImageUser(Request $request, $id)
     {
         $rules = [
-            // 'image'=> 'max:2048',
-            'name_image' =>'required',
+            'image' => 'required',
+            'name_image' =>'required'
         ];
         $messages = [
-            // 'image.max' => 'El tamaño maximo es 2 mega',
-            'name_image.required'=> 'El campo es requerido',
+            'image.required'=> 'El campo es requerido',
+            'name_image.required'=> 'El campo es requerido'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails())
         return $this->response->errorRes($validator->errors(), null);
 
-        if ($request->hasFile('image')) {
-            $customFileName = uniqid() . '_.' . $request->image->extension();
-            $request->image->storeAs('public/'.$id, $customFileName);
+        //Crear directorio si no exite
+        $path = public_path('storage/'.$id);
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
 
+        $data = explode( ',', $request->image);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Data incorrecta');
+        }
+        $temp = explode('/', $data[0]);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Temp incorrecto');
+        }
+        $extension = explode(';', $temp[1]);
+        if (count($extension) == 1) {
+            return $this->response->errorRes('Extension incorrecto');
+        }
+
+
+        $base = base64_decode( $data[ 1 ] );
+        $customFileName = uniqid() . '_.' . $extension[0];
+
+        $status = file_put_contents($path.'/'.$customFileName,$base);
+
+        if($status){
             $path = public_path('storage/'.$id.'/'.$customFileName);
-            // error_log('path: '.$path);
             if (file_exists($path)) {
-
                 //Delete image anterior
                 $path_temp = public_path('storage/'.$id.'/'.$request->name_image);
-                error_log('path_temp: '.$path_temp);
+                // error_log('path_temp: '.$path_temp);
                 $delete = false;
                 if (file_exists($path_temp)) {
                     unlink($path_temp);
@@ -169,7 +148,7 @@ class FileController extends Controller
                 }
 
                 $data = [
-                    'affiliate' => $id,
+                    'user' => $id,
                     'image' => $customFileName,
                     'delete' => $delete,
                     'path' => 'storage/'.$id.'/'.$customFileName,
@@ -178,46 +157,65 @@ class FileController extends Controller
             }
             return $this->response->errorRes('Error la imagen no existe');
         }
-        return $this->response->errorRes('Error al actualizar');
+        return $this->response->errorRes('Error al crear imagen');
     }
 
-    public function addImageSupplier(Request $request, $id, $product = null)
+    public function addImageProduct(Request $request, $id, $product = null)
     {
-        // $rules = ['image'=> 'max:2048'];
-        // $messages = ['image.max'=> 'El tamaño maximo es 2 mega'];
+        $rules = [
+            'image' => 'required'
+        ];
+        $messages = [
+            'image.required'=> 'El campo es requerido'
+        ];
 
-        // $validator = Validator::make($request->all(), $rules, $messages);
-        // if ($validator->fails())
-        // return $this->response->errorRes($validator->errors(), null);
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails())
+        return $this->response->errorRes($validator->errors(), null);
 
-        if ($request->hasFile('image')) {
-            $customFileName = uniqid() . '_.' . $request->image->extension();
-            if ($product != null) {
-                $request->image->storeAs('public/'.$id.'/products', $customFileName);
-                $data = [
-                    'affiliate' => $id,
-                    'product' => $product,
-                    'image' => $customFileName,
-                    'path' => 'storage/'.$id.'/products/'.$customFileName,
-                ];
-                return $this->response->successRes('data',$data);
-            }
+        if ($product == null) {
+            return $this->response->errorRes('Falta parametro del producto');
+        }
 
-            $request->image->storeAs('public/'.$id, $customFileName);
-            $path = public_path('storage/'.$id.'/'.$customFileName);
+        $path = public_path('storage/'.$id.'/products');
+        //Crear directorio si no exite
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        $data = explode( ',', $request->image);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Data incorrecta');
+        }
+        $temp = explode('/', $data[0]);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Temp incorrecto');
+        }
+        $extension = explode(';', $temp[1]);
+        if (count($extension) == 1) {
+            return $this->response->errorRes('Extension incorrecto');
+        }
+
+        $base = base64_decode( $data[ 1 ] );
+        $customFileName = uniqid() . '_.' . $extension[0];
+
+        $status = file_put_contents($path.'/'.$customFileName,$base);
+
+        if($status){
+            $path = public_path('storage/'.$id.'/products/'.$customFileName);
             if (file_exists($path)) {
                 $data = [
-                    'affiliate' => $id,
+                    'user' => $id,
                     'image' => $customFileName,
-                    'path' => 'storage/'.$id.'/'.$customFileName,
+                    'path' => 'storage/'.$id.'/products/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
         }
         return $this->response->errorRes('error al crear imagen');
     }
-
-    public function getImageSupplier(Request $request)
+    /* NOTE: Continuar aqui */
+    public function getImageProduct(Request $request)
     {
         $rules = [
             'supplier' => 'required',
@@ -258,7 +256,7 @@ class FileController extends Controller
 
     }
 
-    public function updateImageSupplier(Request $request, $id, $product = null)
+    public function updateImageProduct(Request $request, $id, $product = null)
     {
         $rules = [
             // 'image'=> 'max:2048',

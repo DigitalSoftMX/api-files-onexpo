@@ -20,17 +20,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('addimage/affiliate/{id}', [FileController::class, 'addImageAffiliate']);
-
-Route::post('add/base64/{id}', [FileController::class, 'addBase64']);
-Route::post('add/base/{id}', [FileController::class, 'addBase']);
-
-Route::post('getimage/affiliate', [FileController::class, 'getImageAffiliate']);
-Route::post('updateimage/affiliate/{id}',[FileController::class, 'updateImageAffiliate']);
-
-Route::post('addimage/supplier/{id}/{product?}', [FileController::class, 'addImageSupplier']);
-Route::post('getimage/supplier', [FileController::class, 'getImageSupplier']);
-Route::post('updateimage/supplier/{id}/{product?}', [FileController::class, 'updateImageSupplier']);
+Route::post('add/image/{id}', [FileController::class, 'addImage']);
+Route::post('get/image/user', [FileController::class, 'getImageUser']);
+Route::post('update/image/user/{id}',[FileController::class, 'updateImageUser']);
+/* Imagen del producto solo Proveedor (Supplier) */
+Route::post('add/image/product/{id}/{product?}', [FileController::class, 'addImageProduct']);
+Route::post('get/image/product', [FileController::class, 'getImageProduct']);
+Route::post('update/image/product/{id}/{product?}', [FileController::class, 'updateImageProduct']);
 
 /* Docs carpetas pdf y xml */
 Route::post('doc/get/{id}', [docController::class, 'get']);
