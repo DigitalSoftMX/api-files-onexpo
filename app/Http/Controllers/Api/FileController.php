@@ -120,6 +120,7 @@ class FileController extends Controller
         if (count($data) == 1) {
             return $this->response->errorRes('Data incorrecta');
         }
+
         $temp = explode('/', $data[0]);
         if (count($data) == 1) {
             return $this->response->errorRes('Temp incorrecto');
@@ -177,8 +178,13 @@ class FileController extends Controller
             return $this->response->errorRes('Falta parametro del producto');
         }
 
+        //Crear directorio de $id User si no existe
+        $path = public_path('storage/'.$id);
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+        //Crear directorio Products si no exite
         $path = public_path('storage/'.$id.'/products');
-        //Crear directorio si no exite
         if (!file_exists($path)) {
             mkdir($path, 0777, true);
         }
@@ -214,6 +220,7 @@ class FileController extends Controller
         }
         return $this->response->errorRes('error al crear imagen');
     }
+
     /* NOTE: Continuar aqui */
     public function getImageProduct(Request $request)
     {
@@ -242,82 +249,68 @@ class FileController extends Controller
             }
             return $this->response->errorRes('Error la imagen del producto existe');
         }
-
-        $path = public_path('storage/'.$request->supplier.'/'.$request->name_image);
-        if (file_exists($path)) {
-            $data = [
-                'supplier' => $request->supplier,
-                'image' => $request->name_image,
-                'path' => 'storage/'.$request->supplier.'/'.$request->name_image,
-            ];
-            return $this->response->successRes('data',$data);
-        }
         return $this->response->errorRes('Error la imagen no existe');
-
     }
 
     public function updateImageProduct(Request $request, $id, $product = null)
     {
         $rules = [
-            // 'image'=> 'max:2048',
-            'name_image' =>'required|min:10',
+            'image' => 'required',
+            'name_image' =>'required'
         ];
         $messages = [
-            // 'image.max' => 'El tamaño maximo es 2 mega',
-            'name_image.required'=> 'El campo es requerido',
-            'name_image.min'=> 'El nombre es de mas de 10 caracteres',
+            'image.required'=> 'El campo es requerido',
+            'name_image.required'=> 'El campo es requerido'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails())
         return $this->response->errorRes($validator->errors(), null);
 
-        if ($request->hasFile('image')) {
-            $customFileName = uniqid() . '_.' . $request->image->extension();
-            //Carpeta productos
-            if ($product != null) {
-                //Guardar imagen nueva
-                $request->image->storeAs('public/'.$id.'/products', $customFileName);
-                $path = public_path('storage/'.$id.'/products/'.$customFileName);
-                // dd($path);
-                if (file_exists($path)) {
-                    //Delete image anterior
-                    $path_temp = public_path('storage/'.$id.'/products/'.$request->name_image);
-                    $delete = false;
-                    if (file_exists($path_temp)) {
-                        unlink($path_temp);
-                        $delete = true;
-                    }
-                    //Data a retornar
-                    $data = [
-                        'affiliate' => $id,
-                        'product' => $product,
-                        'image' => $customFileName,
-                        'delete' => $delete,
-                        'path' => 'storage/'.$id.'/products/'.$customFileName,
-                    ];
-                    return $this->response->successRes('data',$data);
-                }
-                return $this->response->errorRes('Error al crear imagen');
-            }
-            //Guaradar imagen nueva
-            $request->image->storeAs('public/'.$id, $customFileName);
-            $path = public_path('storage/'.$id.'/'.$customFileName);
-            // dd($path);
+        //Crear directorio de $id User si no existe
+        $path = public_path('storage/'.$id);
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+        //Crear directorio Products si no exite
+        $path = public_path('storage/'.$id.'/products');
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        $data = explode( ',', $request->image);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Data incorrecta');
+        }
+        $temp = explode('/', $data[0]);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Temp incorrecto');
+        }
+        $extension = explode(';', $temp[1]);
+        if (count($extension) == 1) {
+            return $this->response->errorRes('Extension incorrecto');
+        }
+
+        $base = base64_decode( $data[ 1 ] );
+        $customFileName = uniqid() . '_.' . $extension[0];
+
+        $status = file_put_contents($path.'/'.$customFileName,$base);
+
+        if($status){
+            $path = public_path('storage/'.$id.'/products/'.$customFileName);
             if (file_exists($path)) {
                 //Delete image anterior
-                $path_temp = public_path('storage/'.$id.'/'.$request->name_image);
+                $path_temp = public_path('storage/'.$id.'/products/'.$request->name_image);
                 $delete = false;
                 if (file_exists($path_temp)) {
                     unlink($path_temp);
                     $delete = true;
                 }
-                //Data a retornar
                 $data = [
-                    'affiliate' => $id,
+                    'user' => $id,
                     'image' => $customFileName,
                     'delete' => $delete,
-                    'path' => 'storage/'.$id.'/'.$customFileName,
+                    'path' => 'storage/'.$id.'/products/'.$customFileName,
                 ];
                 return $this->response->successRes('data',$data);
             }
