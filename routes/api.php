@@ -30,7 +30,7 @@ Route::post('update/image/product/{id}/{product?}', [FileController::class, 'upd
 
 /* Docs carpetas pdf y xml */
 Route::post('doc/get/{id}', [docController::class, 'get']);
-Route::post('doc/all/{id}', [docController::class, 'get']);
+Route::post('doc/all/{id}', [docController::class, 'all']);
 Route::post('doc/add/{id}', [docController::class, 'add']);
 Route::post('doc/update/{id}', [docController::class, 'update']);
 Route::post('doc/delete/{id}', [docController::class, 'delete']);

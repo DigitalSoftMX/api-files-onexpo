@@ -18,155 +18,235 @@ class docController extends Controller
     public function get(Request $request)
     {
         $rules = [
-            'supplier' => 'required',
-            'name_image' => 'required',
+            'user' => 'required',
+            'name_file' => 'required',
         ];
         $messages = [
-            'supplier.required' => 'El campo es requerido',
-            'name_image.required' => 'El nombre de la imagen es requerido',
+            'user.required' => 'El campo es requerido',
+            'name_file.required' => 'El nombre de la imagen es requerido',
         ];
-
         $validator = Validator::make($request->all(), $rules,$messages);
         if ($validator->fails())
             return $this->response->errorRes($validator->errors());
 
-        if ($request->product) {
-            $path = public_path('storage/'.$request->supplier.'/products/'.$request->name_image);
+        // Ontener extension de archivo pdf o xml
+        $data = explode( '.', $request->name_file);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Data incorrecta');
+        }
+
+        if ($data[1] == 'pdf') {
+            $path = public_path('storage/'.$request->user.'/pdfs/'.$request->name_file);
             if (file_exists($path)) {
                 $data = [
-                    'supplier' => $request->supplier,
-                    'image' => $request->name_image,
-                    'product' => $request->product,
-                    'path' => 'storage/'.$request->supplier.'/products/'.$request->name_image,
+                    'user' => $request->user,
+                    'doc' => $request->name_file,
+                    'path' => 'storage/'.$request->user.'/pdfs/'.$request->name_file,
                 ];
                 return $this->response->successRes('data',$data);
             }
             return $this->response->errorRes('Error la imagen del producto existe');
         }
 
-        $path = public_path('storage/'.$request->supplier.'/'.$request->name_image);
-        if (file_exists($path)) {
-            $data = [
-                'supplier' => $request->supplier,
-                'image' => $request->name_image,
-                'path' => 'storage/'.$request->supplier.'/'.$request->name_image,
-            ];
-            return $this->response->successRes('data',$data);
+        if ($data[1] == 'xml') {
+            $path = public_path('storage/'.$request->user.'/xmls/'.$request->name_file);
+            if (file_exists($path)) {
+                $data = [
+                    'user' => $request->user,
+                    'doc' => $request->name_file,
+                    'path' => 'storage/'.$request->user.'/xmls/'.$request->name_file,
+                ];
+                return $this->response->successRes('data',$data);
+            }
+            return $this->response->errorRes('Error la imagen del producto existe');
         }
         return $this->response->errorRes('Error la imagen no existe');
-
     }
 
     public function add(Request $request, $id)
     {
         $rules = [
-            'doc' => 'max:1024',
-            'type' => 'required',
+            'doc' => 'required'
         ];
         $messages = [
-            'doc.max'=> 'El tamaño maximo es 1 mega',
-            'type.required' => 'El campo es requerido',
+            'doc.required'=> 'El campo es requerido'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
-
         if ($validator->fails())
         return $this->response->errorRes($validator->errors(), null);
 
-        if ($request->hasFile('doc')) {
-            $customFileName = uniqid() . '_.' . $request->doc->extension();
-
-            if ($request->type == 'pdf') {
-                $request->doc->storeAs('public/'.$id.'/pdf', $customFileName);
-                $data = [
-                    'user' => $id,
-                    'doc' => $customFileName,
-                    'path' => 'storage/'.$id.'/pdf/'.$customFileName,
-                ];
-                return $this->response->successRes('data',$data);
-            }
-
-            if ($request->type == 'xml') {
-                $request->doc->storeAs('public/'.$id.'/xml', $customFileName);
-                $data = [
-                    'user' => $id,
-                    'doc' => $customFileName,
-                    'path' => 'storage/'.$id.'/xml/'.$customFileName,
-                ];
-                return $this->response->successRes('data',$data);
-            }
-
-            return $this->response->errorRes('Error type no valido');
+        $data = explode( ',', $request->doc);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Data incorrecta');
         }
-        return $this->response->errorRes('error al crear imagen');
+        $temp = explode('/', $data[0]);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Temp incorrecto');
+        }
+        $extension = explode(';', $temp[1]);
+        if (count($extension) == 1) {
+            return $this->response->errorRes('Extension incorrecto');
+        }
+
+        $base = base64_decode( $data[ 1 ] );
+        $customFileName = uniqid() . '_.' . $extension[0];
+
+        if ($extension[0] == 'pdf') {
+            //Crear directorio de $id User si no existe
+            $path = public_path('storage/'.$id);
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+            //Crear directorio Products si no exite
+            $path = public_path('storage/'.$id.'/pdfs');
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            $status = file_put_contents($path.'/'.$customFileName,$base);
+
+            if($status){
+                $path = public_path('storage/'.$id.'/pdfs/'.$customFileName);
+                if (file_exists($path)) {
+                    $data = [
+                        'user' => $id,
+                        'image' => $customFileName,
+                        'path' => 'storage/'.$id.'/pdfs/'.$customFileName,
+                    ];
+                    return $this->response->successRes('data',$data);
+                }
+            }
+        }
+        if ($extension[0] == 'xml') {
+            //Crear directorio de $id User si no existe
+            $path = public_path('storage/'.$id);
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+            //Crear directorio xml si no exite
+            $path = public_path('storage/'.$id.'/xmls');
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            $status = file_put_contents($path.'/'.$customFileName,$base);
+
+            if($status){
+                $path = public_path('storage/'.$id.'/xmls/'.$customFileName);
+                if (file_exists($path)) {
+                    $data = [
+                        'user' => $id,
+                        'image' => $customFileName,
+                        'path' => 'storage/'.$id.'/xmls/'.$customFileName,
+                    ];
+                    return $this->response->successRes('data',$data);
+                }
+            }
+        }
+        return $this->response->errorRes('error al crear archivo');
     }
 
     public function update(Request $request, $id, $product = null)
     {
         $rules = [
-            'image'=> 'max:1024',
-            'name_image' =>'required|min:10',
+            'doc' => 'required',
+            'name_file' =>'required'
         ];
         $messages = [
-            'image.max' => 'El tamaño maximo es 1 mega',
-            'name_image.required'=> 'El campo es requerido',
-            'name_image.min'=> 'El nombre es de mas de 10 caracteres',
+            'doc.required'=> 'El campo es requerido',
+            'name_file.required'=> 'El campo es requerido'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails())
         return $this->response->errorRes($validator->errors(), null);
 
-        if ($request->hasFile('image')) {
-            $customFileName = uniqid() . '_.' . $request->image->extension();
-            //Carpeta productos
-            if ($product != null) {
-                //Guardar imagen nueva
-                $request->image->storeAs('public/'.$id.'/products', $customFileName);
-                $path = public_path('storage/'.$id.'/products/'.$customFileName);
-                // dd($path);
+        $data = explode( ',', $request->doc);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Data incorrecta');
+        }
+        $temp = explode('/', $data[0]);
+        if (count($data) == 1) {
+            return $this->response->errorRes('Temp incorrecto');
+        }
+        $extension = explode(';', $temp[1]);
+        if (count($extension) == 1) {
+            return $this->response->errorRes('Extension incorrecto');
+        }
+
+        $base = base64_decode( $data[ 1 ] );
+        $customFileName = uniqid() . '_.' . $extension[0];
+
+        if ($extension[0] == 'pdf') {
+            //Crear directorio de $id User si no existe
+            $path = public_path('storage/'.$id);
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+            //Crear directorio Products si no exite
+            $path = public_path('storage/'.$id.'/pdfs');
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            $status = file_put_contents($path.'/'.$customFileName,$base);
+
+            if($status){
+                $path = public_path('storage/'.$id.'/pdfs/'.$customFileName);
                 if (file_exists($path)) {
                     //Delete image anterior
-                    $path_temp = public_path('storage/'.$id.'/products/'.$request->name_image);
+                    $path_temp = public_path('storage/'.$id.'/pdfs/'.$request->name_file);
                     $delete = false;
                     if (file_exists($path_temp)) {
                         unlink($path_temp);
                         $delete = true;
                     }
-                    //Data a retornar
                     $data = [
-                        'affiliate' => $id,
-                        'product' => $product,
+                        'user' => $id,
                         'image' => $customFileName,
                         'delete' => $delete,
-                        'path' => 'storage/'.$id.'/products/'.$customFileName,
+                        'path' => 'storage/'.$id.'/pdfs/'.$customFileName,
                     ];
                     return $this->response->successRes('data',$data);
                 }
-                return $this->response->errorRes('Error al crear imagen');
-            }
-            //Guaradar imagen nueva
-            $request->image->storeAs('public/'.$id, $customFileName);
-            $path = public_path('storage/'.$id.'/'.$customFileName);
-            // dd($path);
-            if (file_exists($path)) {
-                //Delete image anterior
-                $path_temp = public_path('storage/'.$id.'/'.$request->name_image);
-                $delete = false;
-                if (file_exists($path_temp)) {
-                    unlink($path_temp);
-                    $delete = true;
-                }
-                //Data a retornar
-                $data = [
-                    'affiliate' => $id,
-                    'image' => $customFileName,
-                    'delete' => $delete,
-                    'path' => 'storage/'.$id.'/'.$customFileName,
-                ];
-                return $this->response->successRes('data',$data);
             }
         }
+        if ($extension[0] == 'xml') {
+            //Crear directorio de $id User si no existe
+            $path = public_path('storage/'.$id);
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+            //Crear directorio xml si no exite
+            $path = public_path('storage/'.$id.'/xmls');
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            $status = file_put_contents($path.'/'.$customFileName,$base);
+
+            if($status){
+                $path = public_path('storage/'.$id.'/xmls/'.$customFileName);
+                if (file_exists($path)) {
+                    //Delete image anterior
+                    $path_temp = public_path('storage/'.$id.'/xmls/'.$request->name_file);
+                    $delete = false;
+                    if (file_exists($path_temp)) {
+                        unlink($path_temp);
+                        $delete = true;
+                    }
+                    $data = [
+                        'user' => $id,
+                        'image' => $customFileName,
+                        'delete' => $delete,
+                        'path' => 'storage/'.$id.'/xmls/'.$customFileName,
+                    ];
+                    return $this->response->successRes('data',$data);
+                }
+            }
+        }
+
         return $this->response->errorRes('error al crear imagen');
     }
 }
